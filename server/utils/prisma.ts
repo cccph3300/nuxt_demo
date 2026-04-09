@@ -1,67 +1,19 @@
-// 延迟加载 PrismaClient
-let prismaInstance: any
+// server/utils/prisma.ts
+import pkg from '@prisma/client'
 
-const prismaClientSingleton = async () => {
-  if (!prismaInstance) {
-    try {
-      // 直接导入 PrismaClient
-      const PrismaModule = await import('@prisma/client')
-      
-      // 尝试多种方式获取 PrismaClient
-      let PrismaClient = PrismaModule.PrismaClient
-      
-      if (!PrismaClient && PrismaModule.default) {
-        PrismaClient = PrismaModule.default.PrismaClient || PrismaModule.default
-      }
-      
-      if (!PrismaClient) {
-        throw new Error('无法从 @prisma/client 模块获取 PrismaClient')
-      }
-      
-      // ✅ 修复：移除废弃的 datasources 参数
-      prismaInstance = new PrismaClient()
-      
-      // 可选：测试连接
-      await prismaInstance.$connect()
-      console.log('PrismaClient 初始化成功')
-    } catch (error) {
-      console.error('PrismaClient 初始化失败:', error)
-      // 创建一个模拟的 prisma 实例，避免应用崩溃
-      prismaInstance = createMockPrisma()
-    }
-  }
-  return prismaInstance
+const { PrismaClient } = pkg
+
+// 单例模式
+const globalForPrisma = globalThis as unknown as {
+  prisma: ReturnType<typeof createPrismaClient> | undefined
 }
 
-// 创建模拟 Prisma 实例（用于构建时或初始化失败时）
-function createMockPrisma() {
-  return {
-    user: { findMany: async () => [], create: async () => ({}) },
-    chatSession: { findMany: async () => [], create: async () => ({}) },
-    chatMessage: { findMany: async () => [], create: async () => ({}) },
-    document: { findMany: async () => [], create: async () => ({}) },
-    documentEmbedding: { findMany: async () => [], create: async () => ({}) },
-    mcpTool: { findMany: async () => [], create: async () => ({}) },
-    mcpToolExecution: { findMany: async () => [], create: async () => ({}) },
-    $connect: async () => {},
-    $disconnect: async () => {}
-  }
+function createPrismaClient() {
+  return new PrismaClient()
 }
 
-// 立即初始化
-let prisma: any
-prismaClientSingleton().then((instance) => {
-  prisma = instance
-  
-  // 赋值给全局变量
-  if (process.env.NODE_ENV !== 'production') {
-    globalThis.prismaGlobal = instance
-  }
-})
+export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
-declare global {
-  var prismaGlobal: any
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma
 }
-
-// 导出 prisma 实例
-export default prisma

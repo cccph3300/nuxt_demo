@@ -1,6 +1,6 @@
 import { Ollama } from 'ollama'
 import { initializeMcpTools, executeTool, mcpToolRegistry } from '../mcp'
-import prisma from '../utils/prisma'
+import {prisma} from '../utils/prisma'
 
 initializeMcpTools()
 
@@ -17,7 +17,7 @@ function detectToolIntent(message: string): { tool: string; params: any } | null
       tool: 'database_query',
       params: {
         table: 'users',
-        limit: limitMatch ? parseInt(limitMatch[1]) : 10,
+        limit: limitMatch && limitMatch[1] ? parseInt(limitMatch[1]) : 10,
         orderBy: 'createdAt'
       }
     }
@@ -29,7 +29,7 @@ function detectToolIntent(message: string): { tool: string; params: any } | null
       tool: 'database_query',
       params: {
         table: 'orders',
-        limit: limitMatch ? parseInt(limitMatch[1]) : 10,
+        limit: limitMatch && limitMatch[1] ? parseInt(limitMatch[1]) : 10,
         orderBy: 'createdAt'
       }
     }
@@ -166,7 +166,7 @@ export default defineEventHandler(async (event) => {
       sessionId: currentSessionId,
       role: 'assistant',
       content: assistantMessage,
-      metadata: toolResult ? { toolResult } : null
+      metadata: toolResult ? JSON.stringify({ toolResult }) : undefined
     }
   })
 

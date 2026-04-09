@@ -1,5 +1,5 @@
 import type { McpTool } from '../types'
-import prisma from '../../utils/prisma'
+import { prisma } from '../../utils/prisma'
 
 const tableToModel: Record<string, string> = {
   'users': 'user',
