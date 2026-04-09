@@ -1,3 +1,5 @@
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+
 // 延迟加载 PrismaClient
 let prismaInstance: any
 
@@ -18,8 +20,9 @@ const prismaClientSingleton = async () => {
         throw new Error('无法从 @prisma/client 模块获取 PrismaClient')
       }
       
-      // 直接使用默认配置（从环境变量读取 DATABASE_URL）
-      prismaInstance = new PrismaClient({})
+      // 使用 MariaDB 适配器
+      const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
+      prismaInstance = new PrismaClient({ adapter })
       
       console.log('PrismaClient 初始化成功')
     } catch (error) {
