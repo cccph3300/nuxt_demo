@@ -62,7 +62,7 @@ export const databaseQueryTool: McpTool = {
       }
 
       const modelName = tableToModel[table]
-      const model = (prisma as any)[modelName]
+      const model = (prisma as any)[modelName as keyof typeof prisma]
       
       if (!model) {
         throw new Error(`找不到模型: ${modelName} (表: ${table})`)

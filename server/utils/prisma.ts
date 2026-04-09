@@ -4,7 +4,7 @@ let prismaInstance: any
 const prismaClientSingleton = async () => {
   if (!prismaInstance) {
     try {
-      // 直接导入 PrismaClient，不使用适配器（避免兼容性问题）
+      // 直接导入 PrismaClient
       const PrismaModule = await import('@prisma/client')
       
       // 尝试多种方式获取 PrismaClient
@@ -18,14 +18,8 @@ const prismaClientSingleton = async () => {
         throw new Error('无法从 @prisma/client 模块获取 PrismaClient')
       }
       
-      // 直接使用 DATABASE_URL，不使用适配器
-      prismaInstance = new PrismaClient({
-        datasources: {
-          db: {
-            url: process.env.DATABASE_URL
-          }
-        }
-      })
+      // 直接使用默认配置（从环境变量读取 DATABASE_URL）
+      prismaInstance = new PrismaClient()
       
       console.log('PrismaClient 初始化成功')
     } catch (error) {
@@ -59,13 +53,9 @@ prismaClientSingleton().then((instance) => {
   
   // 赋值给全局变量
   if (process.env.NODE_ENV !== 'production') {
-    globalThis.prismaGlobal = instance
+    ;(globalThis as any).prismaGlobal = instance
   }
 })
-
-declare global {
-  var prismaGlobal: any
-}
 
 // 导出 prisma 实例
 export default prisma
