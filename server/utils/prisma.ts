@@ -19,7 +19,7 @@ const prismaClientSingleton = async () => {
       }
       
       // 直接使用默认配置（从环境变量读取 DATABASE_URL）
-      prismaInstance = new PrismaClient()
+      prismaInstance = new PrismaClient({})
       
       console.log('PrismaClient 初始化成功')
     } catch (error) {
