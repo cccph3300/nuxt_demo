@@ -18,9 +18,11 @@ const prismaClientSingleton = async () => {
         throw new Error('无法从 @prisma/client 模块获取 PrismaClient')
       }
       
-      // 直接使用默认配置（从环境变量读取 DATABASE_URL）
+      // ✅ 修复：移除废弃的 datasources 参数
       prismaInstance = new PrismaClient()
       
+      // 可选：测试连接
+      await prismaInstance.$connect()
       console.log('PrismaClient 初始化成功')
     } catch (error) {
       console.error('PrismaClient 初始化失败:', error)
@@ -53,9 +55,13 @@ prismaClientSingleton().then((instance) => {
   
   // 赋值给全局变量
   if (process.env.NODE_ENV !== 'production') {
-    ;(globalThis as any).prismaGlobal = instance
+    globalThis.prismaGlobal = instance
   }
 })
+
+declare global {
+  var prismaGlobal: any
+}
 
 // 导出 prisma 实例
 export default prisma
