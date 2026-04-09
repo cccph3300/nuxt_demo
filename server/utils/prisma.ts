@@ -5,10 +5,20 @@ let prismaInstance: any
 
 const prismaClientSingleton = async () => {
   if (!prismaInstance) {
-    // 动态导入 PrismaClient
-    const { PrismaClient } = await import('@prisma/client')
-    const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
-    prismaInstance = new PrismaClient({ adapter })
+    try {
+      // 尝试 ESM 动态导入
+      const { PrismaClient } = await import('@prisma/client')
+      const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
+      prismaInstance = new PrismaClient({ adapter })
+    } catch (error) {
+      // 降级为 CommonJS 导入
+      console.log('使用 CommonJS 导入 PrismaClient')
+      const { createRequire } = await import('module')
+      const require = createRequire(import.meta.url)
+      const { PrismaClient } = require('@prisma/client')
+      const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
+      prismaInstance = new PrismaClient({ adapter })
+    }
   }
   return prismaInstance
 }
