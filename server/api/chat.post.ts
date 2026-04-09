@@ -1,6 +1,6 @@
 import { Ollama } from 'ollama'
 import { initializeMcpTools, executeTool, mcpToolRegistry } from '../mcp'
-import {prisma} from '../utils/prisma'
+import prisma from '../utils/prisma'
 
 initializeMcpTools()
 
@@ -166,7 +166,7 @@ export default defineEventHandler(async (event) => {
       sessionId: currentSessionId,
       role: 'assistant',
       content: assistantMessage,
-      metadata: toolResult ? JSON.stringify({ toolResult }) : undefined
+      metadata: toolResult ? { toolResult } : undefined
     }
   })
 
