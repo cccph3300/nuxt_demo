@@ -50,8 +50,15 @@ export const databaseQueryTool: McpTool = {
     }
 
     try {
+      // 等待 prisma 初始化
+      let attempts = 0
+      while (!prisma && attempts < 5) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        attempts++
+      }
+
       if (!prisma) {
-        throw new Error('Prisma 客户端未初始化')
+        throw new Error('Prisma 客户端初始化超时')
       }
 
       const modelName = tableToModel[table]
@@ -119,7 +126,7 @@ export const databaseInsertTool: McpTool = {
       }
 
       const modelName = tableToModel[table]
-      const model = (prisma as any)[modelName]
+       const model = (prisma as any)[modelName as keyof typeof prisma]
       
       if (!model) {
         throw new Error(`找不到模型: ${modelName} (表: ${table})`)
