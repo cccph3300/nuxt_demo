@@ -6,18 +6,14 @@ let prismaInstance: any
 const prismaClientSingleton = async () => {
   if (!prismaInstance) {
     try {
-      // 尝试 ESM 动态导入
-      const { PrismaClient } = await import('@prisma/client')
+      // 使用默认导入方式（Vercel 推荐）
+      const PrismaModule = await import('@prisma/client')
+      const PrismaClient = PrismaModule.PrismaClient || PrismaModule.default?.PrismaClient
       const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
       prismaInstance = new PrismaClient({ adapter })
     } catch (error) {
-      // 降级为 CommonJS 导入
-      console.log('使用 CommonJS 导入 PrismaClient')
-      const { createRequire } = await import('module')
-      const require = createRequire(import.meta.url)
-      const { PrismaClient } = require('@prisma/client')
-      const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
-      prismaInstance = new PrismaClient({ adapter })
+      console.error('PrismaClient 导入失败:', error)
+      throw new Error('无法初始化 PrismaClient')
     }
   }
   return prismaInstance
