@@ -1,12 +1,10 @@
-import { PrismaMariaDb } from '@prisma/adapter-mariadb'
-
 // 延迟加载 PrismaClient
 let prismaInstance: any
 
 const prismaClientSingleton = async () => {
   if (!prismaInstance) {
     try {
-      // 使用动态导入，兼容 ESM 和 CommonJS
+      // 直接导入 PrismaClient，不使用适配器（避免兼容性问题）
       const PrismaModule = await import('@prisma/client')
       
       // 尝试多种方式获取 PrismaClient
@@ -20,8 +18,14 @@ const prismaClientSingleton = async () => {
         throw new Error('无法从 @prisma/client 模块获取 PrismaClient')
       }
       
-      const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
-      prismaInstance = new PrismaClient({ adapter })
+      // 直接使用 DATABASE_URL，不使用适配器
+      prismaInstance = new PrismaClient({
+        datasources: {
+          db: {
+            url: process.env.DATABASE_URL
+          }
+        }
+      })
       
       console.log('PrismaClient 初始化成功')
     } catch (error) {
